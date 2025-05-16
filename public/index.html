@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Auth Screen -->
+        <div class="auth-screen" id="auth-screen">
+            <h1>Group Chat</h1>
+            <div class="auth-options">
+                <button id="create-group-btn">Create Group</button>
+                <button id="join-group-btn">Join Group</button>
+            </div>
+
+            <!-- Create Group Form -->
+            <div class="form hidden" id="create-group-form">
+                <h2>Create New Group</h2>
+                <input type="text" id="create-group-name" placeholder="Group Name">
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="group-type" value="public" checked> Public
+                    </label>
+                    <label>
+                        <input type="radio" name="group-type" value="private"> Private
+                    </label>
+                </div>
+                <div class="hidden" id="password-container">
+                    <input type="password" id="group-password" placeholder="Group Password">
+                </div>
+                <input type="text" id="create-username" placeholder="Your Name">
+                <button id="create-submit">Create</button>
+            </div>
+
+            <!-- Join Group Form -->
+            <div class="form hidden" id="join-group-form">
+                <h2>Join Group</h2>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="join-type" value="public" checked> Public Group
+                    </label>
+                    <label>
+                        <input type="radio" name="join-type" value="private"> Private Group
+                    </label>
+                </div>
+
+                <!-- Public Groups List -->
+                <div id="public-groups">
+                    <h3>Available Public Groups</h3>
+                    <ul id="public-groups-list"></ul>
+                </div>
+
+                <!-- Private Group Join -->
+                <div class="hidden" id="private-group-join">
+                    <input type="text" id="private-group-id" placeholder="Group ID">
+                    <input type="password" id="private-group-password" placeholder="Password">
+                </div>
+
+                <input type="text" id="join-username" placeholder="Your Name">
+                <button id="join-submit">Join</button>
+            </div>
+        </div>
+
+        <!-- Chat Screen -->
+        <div class="chat-screen hidden" id="chat-screen">
+            <div class="chat-header">
+                <h2 id="group-name"></h2>
+                <div id="typing-indicator"></div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages"></div>
+
+            <div class="chat-input">
+                <input type="text" id="message-input" placeholder="Type your message...">
+                <button id="send-btn">Send</button>
+            </div>
+
+            <div class="members-sidebar">
+                <h3>Members</h3>
+                <ul id="members-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
