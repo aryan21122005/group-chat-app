@@ -1,3 +1,4 @@
+/* General Setup & Universal Styles */
 * {
     margin: 0;
     padding: 0;
@@ -5,31 +6,58 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+html {
+    scroll-behavior: smooth; /* Adds smooth scrolling for anchor links */
+}
+
 body {
-    background-color: #f5f5f5;
+    background-color: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    color: #333;
 }
 
+/* Keyframe Animations for dynamic effects */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+
+/* Main Container */
 .container {
     width: 100%;
     max-width: 1200px;
-    background-color: white;
+    background-color: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
     border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
+/* --- Authentication Screen --- */
 .auth-screen {
-    padding: 2rem;
+    padding: 2rem 3rem;
     text-align: center;
 }
 
 .auth-screen h1 {
     margin-bottom: 2rem;
     color: #2c3e50;
+    font-weight: 600;
 }
 
 .auth-options {
@@ -39,21 +67,34 @@ body {
     margin-bottom: 2rem;
 }
 
-.auth-options button {
+/* Interactive Buttons */
+.auth-options button, .form button, .chat-input button {
     padding: 0.8rem 1.5rem;
     border: none;
     border-radius: 5px;
-    background-color: #3498db;
     color: white;
     font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease; /* Smoother transition for all properties */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.auth-options button {
+    background-color: #3498db;
 }
 
 .auth-options button:hover {
     background-color: #2980b9;
+    transform: translateY(-3px); /* Lifts the button on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+.auth-options button:active {
+    transform: translateY(0); /* Pushes the button down on click */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Forms --- */
 .form {
     max-width: 500px;
     margin: 0 auto;
@@ -68,14 +109,25 @@ body {
     color: #2c3e50;
 }
 
+/* Interactive Inputs */
 .form input[type="text"],
-.form input[type="password"] {
+.form input[type="password"],
+.chat-input input {
     width: 100%;
     padding: 0.8rem;
     margin-bottom: 1rem;
     border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 1rem;
+    transition: all 0.3s ease; /* Smooth transition for focus */
+}
+
+.form input[type="text"]:focus,
+.form input[type="password"]:focus,
+.chat-input input:focus {
+    outline: none;
+    border-color: #3498db; /* Highlights the active input */
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.4);
 }
 
 .radio-group {
@@ -89,6 +141,7 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    cursor: pointer; /* Indicates the label is clickable */
 }
 
 .form button {
@@ -96,22 +149,24 @@ body {
     padding: 0.8rem;
     background-color: #2ecc71;
     color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s;
 }
 
 .form button:hover {
     background-color: #27ae60;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.form button:active {
+    transform: translateY(0);
 }
 
 .hidden {
     display: none;
 }
 
-/* Chat screen styles */
+
+/* --- Chat Screen --- */
 .chat-screen {
     display: grid;
     grid-template-columns: 3fr 1fr;
@@ -127,11 +182,13 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #typing-indicator {
     font-style: italic;
     color: #ecf0f1;
+    animation: pulse 1.5s infinite ease-in-out; /* Pulsing animation */
 }
 
 .chat-messages {
@@ -144,9 +201,11 @@ body {
 .message {
     margin-bottom: 1rem;
     padding: 0.8rem;
-    border-radius: 5px;
+    border-radius: 8px;
     background-color: #e3f2fd;
     max-width: 70%;
+    animation: fadeIn 0.4s ease-out; /* Fade-in effect for new messages */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .message.sent {
@@ -173,35 +232,37 @@ body {
     background-color: #eee;
     display: flex;
     gap: 0.5rem;
-}
-
-.chat-input input {
-    flex: 1;
-    padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    border-top: 1px solid #ddd;
 }
 
 .chat-input button {
-    padding: 0.8rem 1.5rem;
     background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
 }
 
+.chat-input button:hover {
+    background-color: #2980b9;
+    transform: scale(1.05); /* Slightly enlarges button on hover */
+}
+
+.chat-input button:active {
+    transform: scale(1);
+}
+
+/* --- Sidebar --- */
 .members-sidebar {
     grid-column: 2;
     grid-row: 2 / 4;
     padding: 1rem;
     background-color: #ecf0f1;
     overflow-y: auto;
+    border-left: 1px solid #ddd;
 }
 
 .members-sidebar h3 {
     margin-bottom: 1rem;
     color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
 }
 
 .members-sidebar ul {
@@ -209,10 +270,18 @@ body {
 }
 
 .members-sidebar li {
-    padding: 0.5rem;
+    padding: 0.6rem 0.5rem;
     border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s, padding-left 0.3s; /* Smooth transitions for hover */
 }
 
+.members-sidebar li:hover {
+    background-color: #dfe6e9;
+    padding-left: 1rem; /* Indents item on hover for feedback */
+    cursor: pointer;
+}
+
+/* --- Notifications & Lists --- */
 .notification {
     text-align: center;
     padding: 0.5rem;
@@ -234,9 +303,37 @@ body {
     margin-bottom: 0.5rem;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease; /* Smooth transition for hover effect */
+    border-left: 4px solid transparent;
 }
 
 #public-groups-list li:hover {
     background-color: #bbdefb;
+    transform: translateX(5px); /* Shifts the item right on hover */
+    border-left: 4px solid #3498db;
+}
+
+/* --- Group ID Display --- */
+#group-id-container {
+    background-color: #f5f5f5;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-top: 5px;
+    display: none; /* Controlled by JS */
+    transition: all 0.5s;
+}
+
+#group-id-container.show {
+    display: block;
+    animation: fadeIn 0.5s;
+}
+
+#group-id {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+#group-id-container small {
+    color: #7f8c8d;
+    font-size: 0.8em;
 }

@@ -2,133 +2,130 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+// Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Store groups and users
+// Store groups and their data
 const groups = {};
-const users = {};
 
+// Socket.io connection
 io.on('connection', (socket) => {
-    console.log('New user connected:', socket.id);
+    console.log('New user connected');
 
-    // Create a new group
+    // Handle group creation
     socket.on('create-group', ({ groupName, isPrivate, password, username }) => {
-        const groupId = uuidv4();
+        const groupId = generateId();
         groups[groupId] = {
             name: groupName,
             isPrivate,
             password,
-            members: {},
+            members: [username],
             messages: []
         };
 
-        // Join the group
-        joinGroup(socket, groupId, username);
-        socket.emit('group-created', { groupId, groupName });
+        socket.join(groupId);
+        socket.emit('group-created', { groupId, groupName, isPrivate });
+        console.log(`Group created: ${groupName} (${groupId})`);
     });
 
-    // Join an existing group
+    // Handle joining a group
     socket.on('join-group', ({ groupId, password, username }) => {
         const group = groups[groupId];
-        
         if (!group) {
-            return socket.emit('error', 'Group does not exist');
+            socket.emit('error', 'Group not found');
+            return;
         }
 
         if (group.isPrivate && group.password !== password) {
-            return socket.emit('error', 'Incorrect password');
+            socket.emit('error', 'Incorrect password');
+            return;
         }
 
-        joinGroup(socket, groupId, username);
-    });
+        if (!group.members.includes(username)) {
+            group.members.push(username);
+        }
 
-    // Handle group joining logic
-    function joinGroup(socket, groupId, username) {
-        const group = groups[groupId];
-        
-        // Add user to group
-        group.members[socket.id] = username;
-        users[socket.id] = { username, groupId };
-
-        // Join the room
         socket.join(groupId);
-
-        // Notify group
-        socket.to(groupId).emit('user-joined', username);
-        io.to(groupId).emit('update-members', Object.values(group.members));
-
-        // Send group info to the new member
         socket.emit('group-joined', {
             groupId,
             groupName: group.name,
-            members: Object.values(group.members),
+            isPrivate: group.isPrivate,
+            members: group.members,
             messages: group.messages
         });
-    }
 
-    // Send message to group
+        socket.to(groupId).emit('user-joined', username);
+        io.to(groupId).emit('update-members', group.members);
+        console.log(`${username} joined ${group.name}`);
+    });
+
+    // Handle sending messages
     socket.on('send-message', ({ groupId, message }) => {
         const group = groups[groupId];
-        const user = users[socket.id];
+        if (!group) return;
 
-        if (group && user) {
-            const messageData = {
-                id: uuidv4(),
-                sender: user.username,
-                text: message,
-                timestamp: new Date().toISOString()
-            };
+        const msg = {
+            sender: socket.username,
+            text: message,
+            timestamp: new Date().toISOString()
+        };
 
-            // Store message
-            group.messages.push(messageData);
-
-            // Broadcast to group
-            io.to(groupId).emit('new-message', messageData);
-        }
+        group.messages.push(msg);
+        io.to(groupId).emit('new-message', msg);
     });
 
-    // Typing indicator
+    // Handle typing indicators
     socket.on('typing', (groupId) => {
-        const user = users[socket.id];
-        if (user) {
-            socket.to(groupId).emit('typing', user.username);
-        }
+        socket.to(groupId).emit('typing', socket.username);
     });
 
-    // Stop typing indicator
     socket.on('stop-typing', (groupId) => {
         socket.to(groupId).emit('stop-typing');
     });
 
-    // Disconnect handler
-    socket.on('disconnect', () => {
-        const user = users[socket.id];
-        if (user) {
-            const group = groups[user.groupId];
-            if (group) {
-                delete group.members[socket.id];
-                io.to(user.groupId).emit('user-left', user.username);
-                io.to(user.groupId).emit('update-members', Object.values(group.members));
-            }
-            delete users[socket.id];
+    // Handle leaving a group
+    socket.on('leave-group', (groupId) => {
+        const group = groups[groupId];
+        if (!group) return;
+
+        socket.leave(groupId);
+        if (socket.username && group.members.includes(socket.username)) {
+            group.members = group.members.filter(member => member !== socket.username);
+            socket.to(groupId).emit('user-left', socket.username);
+            io.to(groupId).emit('update-members', group.members);
         }
+    });
+
+    // Handle disconnection
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
     });
 
     // List public groups
     socket.on('list-public-groups', () => {
         const publicGroups = Object.entries(groups)
-            .filter(([_, group]) => !group.isPrivate)
-            .map(([id, group]) => ({ id, name: group.name }));
+            .filter(([id, group]) => !group.isPrivate)
+            .map(([id, group]) => ({
+                id,
+                name: group.name,
+                memberCount: group.members.length,
+                messageCount: group.messages.length
+            }));
         socket.emit('public-groups', publicGroups);
     });
 });
 
+// Helper function to generate random ID
+function generateId() {
+    return Math.random().toString(36).substring(2, 8);
+}
+
+// Start the server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
